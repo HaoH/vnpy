@@ -10,6 +10,7 @@ from .object import BarData, TickData
 from .setting import SETTINGS
 from .utility import ZoneInfo
 
+from ex_vnpy.object import BasicStockData
 
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
@@ -70,12 +71,12 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def load_bar_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
-        start: datetime,
-        end: datetime
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval,
+            start: datetime,
+            end: datetime
     ) -> List[BarData]:
         """
         Load bar data from database.
@@ -84,11 +85,11 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def load_tick_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        start: datetime,
-        end: datetime
+            self,
+            symbol: str,
+            exchange: Exchange,
+            start: datetime,
+            end: datetime
     ) -> List[TickData]:
         """
         Load tick data from database.
@@ -97,10 +98,10 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def delete_bar_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval
     ) -> int:
         """
         Delete all bar data with given symbol + exchange + interval.
@@ -109,9 +110,9 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def delete_tick_data(
-        self,
-        symbol: str,
-        exchange: Exchange
+            self,
+            symbol: str,
+            exchange: Exchange
     ) -> int:
         """
         Delete all tick data with given symbol + exchange.
@@ -129,6 +130,13 @@ class BaseDatabase(ABC):
     def get_tick_overview(self) -> List[TickOverview]:
         """
         Return tick data avaible in database.
+        """
+        pass
+
+    @abstractmethod
+    def get_basic_stock_data(self) -> List[BasicStockData]:
+        """
+        Return data avaible in database.
         """
         pass
 
