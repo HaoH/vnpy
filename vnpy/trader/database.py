@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from types import ModuleType
-from typing import List
+from typing import List, Dict
 from dataclasses import dataclass
 from importlib import import_module
 
-from .constant import Interval, Exchange
+from .constant import Interval, Exchange, Market
 from .object import BarData, TickData
 from .setting import SETTINGS
 from .utility import ZoneInfo
@@ -134,7 +134,7 @@ class BaseDatabase(ABC):
         pass
 
     @abstractmethod
-    def get_basic_stock_data(self) -> List[BasicStockData]:
+    def get_basic_stock_data(self) -> Dict[Market, List[BasicStockData]]:
         """
         Return data avaible in database.
         """

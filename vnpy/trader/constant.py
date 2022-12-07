@@ -152,3 +152,9 @@ class Interval(Enum):
     DAILY = "d"
     WEEKLY = "w"
     TICK = "tick"
+
+
+class Market(Enum):
+    CN = "CN"
+    HK = "HK"
+    US = "US"
