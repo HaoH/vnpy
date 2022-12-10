@@ -30,6 +30,13 @@ class BaseDatafeed(ABC):
         """
         output("查询Tick数据失败：没有正确配置数据服务")
 
+    def handle_bar_data(self, df, symbol, exchange, interval, start, end):
+        """
+        convert df to List[BarData]
+
+        """
+        return []
+
 
 datafeed: BaseDatafeed = None
 
