@@ -15,7 +15,7 @@ import numpy as np
 import talib
 
 from .object import BarData, TickData
-from .constant import Exchange, Interval
+from .constant import Exchange, Interval, Market
 
 if sys.version_info >= (3, 9):
     from zoneinfo import ZoneInfo, available_timezones              # noqa
@@ -24,6 +24,17 @@ else:
 
 
 log_formatter: logging.Formatter = logging.Formatter('[%(asctime)s] %(message)s')
+
+
+def exchange_to_market(exchange: Exchange) -> Market:
+    market = Market.CN
+    if exchange in [Exchange.SSE, Exchange.SZSE]:
+        market = Market.CN
+    elif exchange in [Exchange.NYSE, Exchange.NASDAQ, Exchange.AMEX]:
+        market = Market.US
+    elif exchange in [Exchange.SEHK]:
+        market = Market.HK
+    return market
 
 
 def extract_vt_symbol(vt_symbol: str) -> Tuple[str, Exchange]:
