@@ -140,6 +140,10 @@ class BaseDatabase(ABC):
         """
         pass
 
+    @abstractmethod
+    def get_basic_info_by_symbol(self, symbol) -> BasicStockData:
+        pass
+
 
 database: BaseDatabase = None
 
