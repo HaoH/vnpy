@@ -8,6 +8,10 @@ from enum import Enum
 class Direction(Enum):
     """
     Direction of order/trade/position.
+    buy：买入开仓（Direction：LONG，Offset：OPEN）
+    sell：卖出平仓（Direction：SHORT，Offset：CLOSE）
+    short：卖出开仓（Direction：SHORT，Offset：OPEN）
+    cover：买入平仓（Direction：LONG，Offset：CLOSE）
     """
     LONG = "多"
     SHORT = "空"
@@ -17,6 +21,10 @@ class Direction(Enum):
 class Offset(Enum):
     """
     Offset of order/trade.
+    buy：买入开仓（Direction：LONG，Offset：OPEN）
+    sell：卖出平仓（Direction：SHORT，Offset：CLOSE）
+    short：卖出开仓（Direction：SHORT，Offset：OPEN）
+    cover：买入平仓（Direction：LONG，Offset：CLOSE）
     """
     NONE = ""
     OPEN = "开"
@@ -64,6 +72,8 @@ class OrderType(Enum):
     FAK = "FAK"
     FOK = "FOK"
     RFQ = "询价"
+    STOP_WIN = "止盈"     # 市价买低、卖高
+    STOP_LOSS = "止损"    # 市价买高、卖低
 
 
 class OptionType(Enum):
