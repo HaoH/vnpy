@@ -6,6 +6,8 @@ import json
 import logging
 import sys
 from datetime import datetime, time
+from datetime import date
+from enum import Enum
 from pathlib import Path
 from typing import Callable, Dict, Tuple, Union, Optional
 from decimal import Decimal
@@ -14,14 +16,13 @@ from math import floor, ceil
 import numpy as np
 import talib
 
-from .object import BarData, TickData
-from .constant import Exchange, Interval, Market
+from .object import BarData, TickData, BaseData
+from .constant import Exchange, Interval, Market, Direction, Offset, OrderType, Status
 
 if sys.version_info >= (3, 9):
-    from zoneinfo import ZoneInfo, available_timezones              # noqa
+    from zoneinfo import ZoneInfo, available_timezones  # noqa
 else:
-    from backports.zoneinfo import ZoneInfo, available_timezones    # noqa
-
+    from backports.zoneinfo import ZoneInfo, available_timezones  # noqa
 
 log_formatter: logging.Formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
@@ -105,6 +106,45 @@ def get_icon_path(filepath: str, ico_name: str) -> str:
     return str(icon_path)
 
 
+# 自定义 JSON 编码器
+class VnpyJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.int64):
+            return int(obj)
+        elif isinstance(obj, Enum):
+            return {"__enum__": obj.__class__.__name__, "value": obj.value}
+        elif isinstance(obj, datetime):
+            return {"__type__": "datetime", "value": obj.isoformat()}
+        elif isinstance(obj, date):
+            return {"__type__": "datetime", "value": obj.isoformat()}
+        # elif isinstance(obj, BaseData):
+        elif hasattr(obj, '__dict__'):
+            return obj.__dict__
+        return super().default(obj)
+
+
+class VnpyJsonDecoder(json.JSONDecoder):
+    def __init__(self, *args, **kwargs):
+        super().__init__(object_hook=self.dict_to_object, *args, **kwargs)
+
+    def dict_to_object(self, obj_dict):
+        if '__enum__' in obj_dict:
+            enum_name = obj_dict['__enum__']
+            enum_value = obj_dict['value']
+            if enum_name == 'StopOrderStatus':
+                from vnpy_ctastrategy.base import StopOrderStatus
+                enum_type = StopOrderStatus
+            elif enum_name == 'BacktestingMode':
+                from vnpy_ctastrategy.base import BacktestingMode
+                enum_type = BacktestingMode
+            else:
+                enum_type = globals()[enum_name]
+            return enum_type(enum_value)
+        elif "__type__" in obj_dict and obj_dict["__type__"] == "datetime":
+            return datetime.fromisoformat(obj_dict["value"])
+        return obj_dict
+
+
 def load_json(filename: str) -> dict:
     """
     Load data from json file in temp path.
@@ -113,7 +153,7 @@ def load_json(filename: str) -> dict:
 
     if filepath.exists():
         with open(filepath, mode="r", encoding="UTF-8") as f:
-            data: dict = json.load(f)
+            data: dict = json.load(f, cls=VnpyJsonDecoder)
         return data
     else:
         save_json(filename, {})
@@ -130,7 +170,8 @@ def save_json(filename: str, data: dict) -> None:
             data,
             f,
             indent=4,
-            ensure_ascii=False
+            ensure_ascii=False,
+            cls=VnpyJsonEncoder
         )
 
 
@@ -235,8 +276,8 @@ class BarGenerator:
         if not self.bar:
             new_minute = True
         elif (
-            (self.bar.datetime.minute != tick.datetime.minute)
-            or (self.bar.datetime.hour != tick.datetime.hour)
+                (self.bar.datetime.minute != tick.datetime.minute)
+                or (self.bar.datetime.hour != tick.datetime.hour)
         ):
             self.bar.datetime = self.bar.datetime.replace(
                 second=0, microsecond=0
@@ -629,11 +670,11 @@ class ArrayManager(object):
         return result[-1]
 
     def apo(
-        self,
-        fast_period: int,
-        slow_period: int,
-        matype: int = 0,
-        array: bool = False
+            self,
+            fast_period: int,
+            slow_period: int,
+            matype: int = 0,
+            array: bool = False
     ) -> Union[float, np.ndarray]:
         """
         APO.
@@ -662,11 +703,11 @@ class ArrayManager(object):
         return result[-1]
 
     def ppo(
-        self,
-        fast_period: int,
-        slow_period: int,
-        matype: int = 0,
-        array: bool = False
+            self,
+            fast_period: int,
+            slow_period: int,
+            matype: int = 0,
+            array: bool = False
     ) -> Union[float, np.ndarray]:
         """
         PPO.
@@ -776,11 +817,11 @@ class ArrayManager(object):
         return result[-1]
 
     def macd(
-        self,
-        fast_period: int,
-        slow_period: int,
-        signal_period: int,
-        array: bool = False
+            self,
+            fast_period: int,
+            slow_period: int,
+            signal_period: int,
+            array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray, np.ndarray],
         Tuple[float, float, float]
@@ -850,11 +891,11 @@ class ArrayManager(object):
         return result[-1]
 
     def ultosc(
-        self,
-        time_period1: int = 7,
-        time_period2: int = 14,
-        time_period3: int = 28,
-        array: bool = False
+            self,
+            time_period1: int = 7,
+            time_period2: int = 14,
+            time_period3: int = 28,
+            array: bool = False
     ) -> Union[float, np.ndarray]:
         """
         Ultimate Oscillator.
@@ -874,10 +915,10 @@ class ArrayManager(object):
         return result[-1]
 
     def boll(
-        self,
-        n: int,
-        dev: float,
-        array: bool = False
+            self,
+            n: int,
+            dev: float,
+            array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
@@ -894,10 +935,10 @@ class ArrayManager(object):
         return up, down
 
     def keltner(
-        self,
-        n: int,
-        dev: float,
-        array: bool = False
+            self,
+            n: int,
+            dev: float,
+            array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
@@ -914,7 +955,7 @@ class ArrayManager(object):
         return up, down
 
     def donchian(
-        self, n: int, array: bool = False
+            self, n: int, array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
@@ -930,9 +971,9 @@ class ArrayManager(object):
         return up[-1], down[-1]
 
     def aroon(
-        self,
-        n: int,
-        array: bool = False
+            self,
+            n: int,
+            array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
@@ -995,10 +1036,10 @@ class ArrayManager(object):
         return result[-1]
 
     def adosc(
-        self,
-        fast_period: int,
-        slow_period: int,
-        array: bool = False
+            self,
+            fast_period: int,
+            slow_period: int,
+            array: bool = False
     ) -> Union[float, np.ndarray]:
         """
         ADOSC.
@@ -1019,13 +1060,13 @@ class ArrayManager(object):
         return result[-1]
 
     def stoch(
-        self,
-        fastk_period: int,
-        slowk_period: int,
-        slowk_matype: int,
-        slowd_period: int,
-        slowd_matype: int,
-        array: bool = False
+            self,
+            fastk_period: int,
+            slowk_period: int,
+            slowk_matype: int,
+            slowd_period: int,
+            slowd_matype: int,
+            array: bool = False
     ) -> Union[
         Tuple[float, float],
         Tuple[np.ndarray, np.ndarray]
@@ -1077,3 +1118,13 @@ def get_file_logger(filename: str) -> logging.Logger:
     handler.setFormatter(log_formatter)
     logger.addHandler(handler)  # each handler will be added only once.
     return logger
+
+
+def update_nested_dict(target_dict, update_dict):
+    for key, value in update_dict.items():
+        if isinstance(value, dict) and key in target_dict and isinstance(target_dict[key], dict):
+            # 如果值是字典，且目标字典中也有相应的键，并且目标字典中的值也是字典，则递归更新
+            update_nested_dict(target_dict[key], value)
+        else:
+            # 否则，直接更新目标字典的值
+            target_dict[key] = value

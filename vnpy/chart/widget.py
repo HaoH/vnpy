@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import List, Dict, Type
 
 import pyqtgraph as pg
+from PySide6.QtGui import QPixmap, QPainter, QFont
+from pyqtgraph import icons, ButtonItem
 
 from vnpy.trader.ui import QtGui, QtWidgets, QtCore
 from vnpy.trader.object import BarData
@@ -13,7 +15,7 @@ from .base import (
 )
 from .axis import DatetimeAxis
 from .item import ChartItem
-
+from ..trader.constant import Interval
 
 pg.setConfigOptions(antialias=True)
 
@@ -26,6 +28,9 @@ class ChartWidget(pg.PlotWidget):
         """"""
         super().__init__(parent)
 
+        self.interval_d_btn = None
+        self.interval_w_btn = None
+        self.interval = Interval.DAILY
         self._manager: BarManager = BarManager()
 
         self._plots: Dict[str, pg.PlotItem] = {}
@@ -111,6 +116,24 @@ class ChartWidget(pg.PlotWidget):
         # Add plot onto the layout
         self._layout.nextRow()
         self._layout.addItem(plot)
+
+    def get_pixmap(self, character: str):
+        # 创建一个 QPixmap 对象
+        pixmap = QPixmap(20, 20)
+        # 使用 QPainter 在 QPixmap 上绘制字符
+        pixmap.fill()  # 清空 QPixmap
+        painter = QPainter(pixmap)
+        painter.setFont(QFont("Arial", 16))
+        painter.drawText(pixmap.rect(), 1, character)
+        painter.end()  # 结束绘制
+        return pixmap
+
+    def add_period_changer(self, plot_name: str):
+        plot: pg.PlotItem = self._plots.get(plot_name)
+        self.interval_w_btn = ButtonItem(self.get_pixmap("W"), 20, plot)
+        self.interval_w_btn.setPos(80, 0)
+        self.interval_d_btn = ButtonItem(self.get_pixmap("D"), 20, plot)
+        self.interval_d_btn.setPos(110, 0)
 
     def add_item(
         self,
@@ -253,22 +276,27 @@ class ChartWidget(pg.PlotWidget):
         elif delta.y() < 0:
             self._on_key_down()
 
-    def _on_key_left(self) -> None:
+        # if delta.x() > 0:
+        #     self._on_key_left(delta.x() * 1)
+        # elif delta.x() < 0:
+        #     self._on_key_right(delta.x() * -1)
+
+    def _on_key_left(self, n: int = 1) -> None:
         """
         Move chart to left.
         """
-        self._right_ix -= 1
+        self._right_ix -= n
         self._right_ix = max(self._right_ix, self._bar_count)
 
         self._update_x_range()
         self._cursor.move_left()
         self._cursor.update_info()
 
-    def _on_key_right(self) -> None:
+    def _on_key_right(self, n: int = 1) -> None:
         """
         Move chart to right.
         """
-        self._right_ix += 1
+        self._right_ix += n
         self._right_ix = min(self._right_ix, self._manager.get_count())
 
         self._update_x_range()
@@ -282,6 +310,9 @@ class ChartWidget(pg.PlotWidget):
         self._bar_count *= 1.2
         self._bar_count = min(int(self._bar_count), self._manager.get_count())
 
+        self._right_ix = self._cursor._x + int(self._bar_count / 2)
+        self._right_ix = min(self._right_ix, self._manager.get_count())
+
         self._update_x_range()
         self._cursor.update_info()
 
@@ -291,6 +322,9 @@ class ChartWidget(pg.PlotWidget):
         """
         self._bar_count /= 1.2
         self._bar_count = max(int(self._bar_count), self.MIN_BAR_COUNT)
+
+        self._right_ix = self._cursor._x + int(self._bar_count / 2)
+        self._right_ix = min(self._right_ix, self._manager.get_count())
 
         self._update_x_range()
         self._cursor.update_info()

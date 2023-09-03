@@ -31,6 +31,14 @@ class OptimizationSetting:
         self.params: Dict[str, List] = {}
         self.target_name: str = ""
 
+    def add_parameter_values(self, name: str, values: list) -> Tuple[bool, str]:
+        """"""
+        if not values:
+            return False, "参数列表为空"
+
+        self.params[name] = values
+        return True, f"参数{len(values)}个"
+
     def add_parameter(
         self,
         name: str,
