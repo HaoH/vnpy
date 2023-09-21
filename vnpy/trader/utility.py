@@ -140,6 +140,9 @@ class VnpyJsonDecoder(json.JSONDecoder):
             elif enum_name == 'PlanStatus':
                 from ex_vnpy.trade_plan import PlanStatus
                 enum_type = PlanStatus
+            elif enum_name == 'StoplossReason':
+                from ex_vnpy.trade_plan import StoplossReason
+                enum_type = StoplossReason
             else:
                 enum_type = globals()[enum_name]
             return enum_type(enum_value)

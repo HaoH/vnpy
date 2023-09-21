@@ -209,6 +209,8 @@ class ChartWidget(pg.PlotWidget):
         """
         for item, plot in self._item_plot_map.items():
             min_value, max_value = item.get_y_range()
+            if type(item).__name__ == 'CandleItem':
+                min_value = min_value * 0.9
 
             plot.setLimits(
                 xMin=-1,
@@ -239,8 +241,10 @@ class ChartWidget(pg.PlotWidget):
 
         # Update limit for y-axis
         for item, plot in self._item_plot_map.items():
-            y_range: tuple = item.get_y_range(min_ix, max_ix)
-            plot.setRange(yRange=y_range)
+            y_range_min, y_range_max = item.get_y_range(min_ix, max_ix)
+            if type(item).__name__ == 'CandleItem':
+                y_range_min = int(y_range_min * 0.9)     # 下方留出空间给到止损线
+            plot.setRange(yRange=(y_range_min, y_range_max))
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         """
