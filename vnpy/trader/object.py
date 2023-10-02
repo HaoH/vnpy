@@ -125,6 +125,8 @@ class OrderData(BaseData):
     status: Status = Status.SUBMITTING
     datetime: datetime = None
     reference: str = ""
+    # 如果该订单由stoporder触发，则记录stop_orderid
+    trigger_stop_orderid: str = ""
 
     def __post_init__(self) -> None:
         """"""

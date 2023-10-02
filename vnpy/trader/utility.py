@@ -137,6 +137,11 @@ class VnpyJsonDecoder(json.JSONDecoder):
             elif enum_name == 'BacktestingMode':
                 from vnpy_ctastrategy.base import BacktestingMode
                 enum_type = BacktestingMode
+            elif enum_name == 'OrderType':
+                enum_type = OrderType
+                # 兼容老格式
+                if enum_value == "止损":
+                    enum_value = "止损市价单"
             elif enum_name == 'PlanStatus':
                 from ex_vnpy.trade_plan import PlanStatus
                 enum_type = PlanStatus

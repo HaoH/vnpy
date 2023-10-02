@@ -72,8 +72,10 @@ class OrderType(Enum):
     FAK = "FAK"
     FOK = "FOK"
     RFQ = "询价"
-    STOP_WIN = "止盈"     # 市价买低、卖高
-    STOP_LOSS = "止损"    # 市价买高、卖低
+    MIT = "触及市价单(止盈)"     # Market if touched, 市价买低、卖高
+    LIT = "触及限价单(止盈)",    # limit if touched, 现价买低、卖高
+    STP = "止损市价单"          # stop market, 市价买高、卖低
+    STL = "止损限价单"          # stop limit, 现价买高、卖低
 
 
 class OptionType(Enum):
