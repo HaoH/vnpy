@@ -10,7 +10,7 @@ from .object import BarData, TickData
 from .setting import SETTINGS
 from .utility import ZoneInfo
 
-from ex_vnpy.object import BasicStockData
+from ex_vnpy.object import BasicStockData, BasicIndexData, BasicSymbolData
 
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
@@ -156,15 +156,16 @@ class BaseDatabase(ABC):
     @abstractmethod
     def get_basic_stock_data(self) -> Dict[Market, List[BasicStockData]]:
         """
-        Return data avaible in database.
+        Return data available in database.
         """
         pass
 
-    def get_basic_index_data(self) -> Dict[Market, List[BasicStockData]]:
+    @abstractmethod
+    def get_basic_index_data(self) -> Dict[Market, List[BasicIndexData]]:
         pass
 
     @abstractmethod
-    def get_basic_info_by_symbol(self, symbol) -> BasicStockData:
+    def get_basic_info_by_symbol(self, symbol, symbol_type: str='CS') -> BasicSymbolData:
         pass
 
 
