@@ -35,6 +35,7 @@ class BarOverview:
     count: int = 0
     start: datetime = None
     end: datetime = None
+    is_index: int = 0
 
 
 @dataclass
@@ -62,6 +63,12 @@ class BaseDatabase(ABC):
         """
         pass
 
+    def save_index_bar_data(self, bars: List[BarData], stream: bool = False) -> bool:
+        """
+        Save bar data into database.
+        """
+        pass
+
     @abstractmethod
     def save_tick_data(self, ticks: List[TickData], stream: bool = False) -> bool:
         """
@@ -71,6 +78,19 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def load_bar_data(
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval,
+            start: datetime,
+            end: datetime
+    ) -> List[BarData]:
+        """
+        Load bar data from database.
+        """
+        pass
+
+    def load_index_bar_data(
             self,
             symbol: str,
             exchange: Exchange,
@@ -120,7 +140,7 @@ class BaseDatabase(ABC):
         pass
 
     @abstractmethod
-    def get_bar_overview(self) -> List[BarOverview]:
+    def get_bar_overview(self, type: str = "CS") -> List[BarOverview]:
         """
         Return bar data avaible in database.
         """
@@ -138,6 +158,9 @@ class BaseDatabase(ABC):
         """
         Return data avaible in database.
         """
+        pass
+
+    def get_basic_index_data(self) -> Dict[Market, List[BasicStockData]]:
         pass
 
     @abstractmethod

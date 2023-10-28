@@ -25,6 +25,12 @@ class BaseDatafeed(ABC):
         """
         output("查询K线数据失败：没有正确配置数据服务")
 
+    def query_index_bar_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[BarData]]:
+        """
+        Query history bar data.
+        """
+        pass
+
     def query_tick_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[TickData]]:
         """
         Query history tick data.
