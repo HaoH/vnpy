@@ -53,7 +53,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_ui(self) -> None:
         """"""
         self.setWindowTitle(self.window_title)
-        self.init_dock()
+        # self.init_dock()
         self.init_toolbar()
         self.init_menu()
         self.load_window_setting("custom")
