@@ -168,6 +168,10 @@ class BaseDatabase(ABC):
     def get_basic_info_by_symbol(self, symbol, symbol_type: str='CS') -> BasicSymbolData:
         pass
 
+    @abstractmethod
+    def update_daily_stat_data(self, many_data: List):
+        pass
+
 
 database: BaseDatabase = None
 
