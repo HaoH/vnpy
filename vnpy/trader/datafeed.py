@@ -44,6 +44,24 @@ class BaseDatafeed(ABC):
         """
         return []
 
+    def index_components(self, symbol, output: Callable = print):
+        """
+        Query index components
+        """
+        output("查询指数成分股失败：没有正确配置数据服务")
+
+    def get_ex_factor(self, symbols, output: Callable = print):
+        """
+        Query ex_factor
+        """
+        output("查询复权因子失败：没有正确配置数据服务")
+
+    def get_shares(self, symbols, start_date, end_date, output: Callable = print):
+        """
+        Query shares
+        """
+        output("查询股本信息失败：没有正确配置数据服务")
+
 
 datafeed: BaseDatafeed = None
 

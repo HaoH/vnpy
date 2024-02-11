@@ -170,3 +170,8 @@ class Market(Enum):
     CN = "CN"
     HK = "HK"
     US = "US"
+
+
+class Conflict(Enum):
+    REPLACE = "replace"
+    IGNORE = "ignore"

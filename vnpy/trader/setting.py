@@ -35,7 +35,9 @@ SETTINGS: Dict[str, Any] = {
     "database.host": "",
     "database.port": 0,
     "database.user": "",
-    "database.password": ""
+    "database.password": "",
+    "level2data.username": "",
+    "level2data.password": ""
 }
 
 

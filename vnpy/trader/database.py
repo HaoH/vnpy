@@ -5,7 +5,7 @@ from typing import List, Dict
 from dataclasses import dataclass
 from importlib import import_module
 
-from .constant import Interval, Exchange, Market
+from .constant import Interval, Exchange, Market, Conflict
 from .object import BarData, TickData
 from .setting import SETTINGS
 from .utility import ZoneInfo
@@ -57,20 +57,22 @@ class BaseDatabase(ABC):
     """
 
     @abstractmethod
-    def save_bar_data(self, bars: List[BarData], stream: bool = False) -> bool:
+    def save_bar_data(self, bars: List[BarData], stream: bool = False, conflict: Conflict = Conflict.REPLACE) -> bool:
         """
         Save bar data into database.
         """
         pass
 
-    def save_index_bar_data(self, bars: List[BarData], stream: bool = False) -> bool:
+    def save_index_bar_data(self, bars: List[BarData], stream: bool = False,
+                            conflict: Conflict = Conflict.REPLACE) -> bool:
         """
         Save bar data into database.
         """
         pass
 
     @abstractmethod
-    def save_tick_data(self, ticks: List[TickData], stream: bool = False) -> bool:
+    def save_tick_data(self, ticks: List[TickData], stream: bool = False,
+                       conflict: Conflict = Conflict.REPLACE) -> bool:
         """
         Save tick data into database.
         """
@@ -165,11 +167,29 @@ class BaseDatabase(ABC):
         pass
 
     @abstractmethod
-    def get_basic_info_by_symbol(self, symbol, symbol_type: str='CS') -> BasicSymbolData:
+    def get_basic_info_by_symbols(self, symbols, market: Market = Market.CN, symbol_type: str = 'CS') -> List[BasicSymbolData]:
         pass
 
     @abstractmethod
-    def update_daily_stat_data(self, many_data: List):
+    def update_daily_stat_data(self, many_data: List, conflict: Conflict = Conflict.IGNORE):
+        pass
+
+    @abstractmethod
+    def save_operation_log(self, type: str, op_status: str, op_time: datetime, op_info: str = ""):
+        pass
+
+    @abstractmethod
+    def save_capital_data(self, capital_data: List):
+        pass
+
+    @abstractmethod
+    def save_capital_flat_data(self, capital_data: List):
+        pass
+
+    def update_stocks_meta_data(self, stocks_data, market: Market):
+        pass
+
+    def get_symbol_ids(self, s_type: str, market: Market) -> Dict[str, int]:
         pass
 
 
