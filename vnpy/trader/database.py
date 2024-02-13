@@ -198,6 +198,9 @@ class BaseDatabase(ABC):
     def get_latest_statistic_date(self):
         pass
 
+    def get_latest_op_info(self, op_type):
+        pass
+
 
 database: BaseDatabase = None
 
