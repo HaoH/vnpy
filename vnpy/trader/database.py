@@ -201,6 +201,15 @@ class BaseDatabase(ABC):
     def get_latest_op_info(self, op_type):
         pass
 
+    def update_aliyun_binlog_files(self, binlog_files: List):
+        pass
+
+    def get_new_binlog_files(self) -> List:
+        pass
+
+    def get_capital_data_by_month(self, month) -> List:
+        pass
+
 
 database: BaseDatabase = None
 
