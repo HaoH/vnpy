@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from types import ModuleType
-from typing import List, Dict
+from typing import List, Dict, Union
 from dataclasses import dataclass
 from importlib import import_module
 
 from .constant import Interval, Exchange, Market, Conflict
-from .object import BarData, TickData
+from .object import BarData, TickData, BaseData
 from .setting import SETTINGS
 from .utility import ZoneInfo
 
@@ -24,22 +24,23 @@ def convert_tz(dt: datetime) -> datetime:
 
 
 @dataclass
-class BarOverview:
+class BarOverview(BaseData):
     """
     Overview of bar data stored in database.
     """
 
     symbol: str = ""
+    symbol_id: int = 0
     exchange: Exchange = None
     interval: Interval = None
     count: int = 0
     start: datetime = None
     end: datetime = None
-    is_index: int = 0
+    stype: str = "CS"
 
 
 @dataclass
-class TickOverview:
+class TickOverview(BaseData):
     """
     Overview of tick data stored in database.
     """
@@ -63,13 +64,6 @@ class BaseDatabase(ABC):
         """
         pass
 
-    def save_index_bar_data(self, bars: List[BarData], stream: bool = False,
-                            conflict: Conflict = Conflict.REPLACE) -> bool:
-        """
-        Save bar data into database.
-        """
-        pass
-
     @abstractmethod
     def save_tick_data(self, ticks: List[TickData], stream: bool = False,
                        conflict: Conflict = Conflict.REPLACE) -> bool:
@@ -85,20 +79,8 @@ class BaseDatabase(ABC):
             exchange: Exchange,
             interval: Interval,
             start: datetime,
-            end: datetime
-    ) -> List[BarData]:
-        """
-        Load bar data from database.
-        """
-        pass
-
-    def load_index_bar_data(
-            self,
-            symbol: str,
-            exchange: Exchange,
-            interval: Interval,
-            start: datetime,
-            end: datetime
+            end: datetime,
+            stype: str = None
     ) -> List[BarData]:
         """
         Load bar data from database.
@@ -142,7 +124,7 @@ class BaseDatabase(ABC):
         pass
 
     @abstractmethod
-    def get_bar_overview(self, type: str = "CS") -> List[BarOverview]:
+    def get_bar_overview(self, symbol_id: int = None, symbol: str = None, stype: str = "CS") -> List[BarOverview]:
         """
         Return bar data avaible in database.
         """
@@ -156,14 +138,22 @@ class BaseDatabase(ABC):
         pass
 
     @abstractmethod
-    def get_basic_stock_data(self) -> Dict[Market, List[BasicStockData]]:
+    def get_symbol_ids_by_market(self, s_type: str, market: Market) -> Dict[str, int]:
+        pass
+
+    @abstractmethod
+    def get_symbol_ids_by_symbols(self, vt_symbols: list) -> Dict[str, int]:
+        pass
+
+    @abstractmethod
+    def get_basic_stock_data(self, markets: List[Market]) -> [Market, List[BasicStockData]]:
         """
         Return data available in database.
         """
         pass
 
     @abstractmethod
-    def get_basic_index_data(self) -> Dict[Market, List[BasicIndexData]]:
+    def get_basic_index_data(self, markets: List[Market]) -> Dict[Market, List[BasicIndexData]]:
         pass
 
     @abstractmethod
@@ -186,7 +176,7 @@ class BaseDatabase(ABC):
     def save_capital_flat_data(self, capital_data: List):
         pass
 
-    def update_stocks_meta_data(self, stocks_data, market: Market):
+    def update_stocks_meta_data(self, stocks_data):
         pass
 
     def get_symbol_ids(self, s_type: str, market: Market) -> Dict[str, int]:
@@ -208,6 +198,9 @@ class BaseDatabase(ABC):
         pass
 
     def get_capital_data_by_month(self, month) -> List:
+        pass
+
+    def get_latest_overview_date(self, market: Market):
         pass
 
 

@@ -1,15 +1,15 @@
 """
 Basic data structure used for general trading function in the trading platform.
 """
-
-from dataclasses import dataclass, field
-from datetime import datetime
+import enum
+from dataclasses import dataclass, field, asdict
+from datetime import datetime, date
 from logging import INFO
-
+from typing import List, TypeVar, Type
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
-
+T = TypeVar('T', bound='BaseData')
 
 @dataclass
 class BaseData:
@@ -21,6 +21,61 @@ class BaseData:
     gateway_name: str
 
     extra: dict = field(default=None, init=False)
+
+    def to_dict(self, update: dict = None, exclude: List[str] = None) -> dict:
+        """
+        转换数据类实例为字典，并过滤掉不需要的键，将枚举类型的值转换为其.value属性。
+        :param update: 要更新的数据
+        :param exclude: 要排除的字段名列表。
+        :return: 转换后的字典。
+        """
+        if exclude is None:
+            exclude = []
+        exclude.extend(['vt_symbol', 'gateway_name', 'extra'])
+
+        # 使用asdict获取数据类的字典表示，然后遍历字典，处理枚举和排除的键，对于_price结尾的键，去掉结尾
+        dicts = {k[:-6] if k.endswith('_price') else k: (v.value if isinstance(v, enum.Enum) else v) for k, v in asdict(self).items() if
+                k not in exclude}
+        # 如果有附加的字典，就进行合并
+        if update:
+            dicts.update(update)
+        return dicts
+
+    @classmethod
+    def from_dict(cls: Type[T], data: dict, update: dict = None) -> T:
+        """
+        从字典初始化BaseData对象。
+        :param data: 包含初始化数据的字典。
+        :param update: 需要在初始化时更新的额外数据。
+        :return: BaseData或其子类的一个实例。
+        """
+        from .database import DB_TZ
+
+        if update is None:
+            update = {}
+        data = {**data, **update, **{'gateway_name': "DB"}}
+
+        # 获取cls及其所有父类的annotations
+        annotations = {}
+        for base in reversed(cls.__mro__):
+            annotations.update(getattr(base, '__annotations__', {}))
+
+        init_args = {}
+        for field_name, field_type in annotations.items():
+            key = field_name[:-6] if field_name.endswith('_price') else field_name
+            if key in data:
+                value = data[key]
+                if issubclass(field_type, enum.Enum):
+                    value = field_type(value)  # 转换为枚举
+                elif issubclass(field_type, datetime):
+                    if value == '0000-00-00':
+                        value = date(1970, 1, 1)
+                    if isinstance(value, datetime):
+                        value = value.astimezone(DB_TZ)
+
+                init_args[field_name] = value
+
+        return cls(**init_args)
 
 
 @dataclass
@@ -86,12 +141,12 @@ class BarData(BaseData):
     """
     Candlestick bar data of a certain trading period.
     """
-
     symbol: str
     exchange: Exchange
+    interval: Interval
     datetime: datetime
 
-    interval: Interval = None
+    symbol_id: int = 0
     volume: float = 0
     turnover: float = 0
     open_interest: float = 0
@@ -99,6 +154,7 @@ class BarData(BaseData):
     high_price: float = 0
     low_price: float = 0
     close_price: float = 0
+    stype: str = "CS"
 
     def __post_init__(self) -> None:
         """"""
