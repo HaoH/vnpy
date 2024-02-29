@@ -179,9 +179,6 @@ class BaseDatabase(ABC):
     def update_stocks_meta_data(self, stocks_data):
         pass
 
-    def get_symbol_ids(self, s_type: str, market: Market) -> Dict[str, int]:
-        pass
-
     def get_capital_days(self, month_first_day, month_last_day) -> List[str]:
         pass
 
