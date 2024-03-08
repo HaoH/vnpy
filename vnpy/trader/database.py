@@ -197,6 +197,9 @@ class BaseDatabase(ABC):
     def get_capital_data_by_month(self, month) -> List:
         pass
 
+    def get_capital_flat_data_by_symbol(self, symbol_id, start_dt: datetime = None, end_dt: datetime = None) -> List:
+        pass
+
     def get_latest_overview_date(self, market: Market):
         pass
 
