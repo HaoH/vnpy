@@ -3,7 +3,8 @@ Basic data structure used for general trading function in the trading platform.
 """
 import enum
 from dataclasses import dataclass, field, asdict
-from datetime import datetime, date
+import datetime as dt
+# from datetime import datetime, date
 from logging import INFO
 from typing import List, TypeVar, Type
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
@@ -65,18 +66,47 @@ class BaseData:
             key = field_name[:-6] if field_name.endswith('_price') else field_name
             if key in data:
                 value = data[key]
-                if issubclass(field_type, enum.Enum):
+                if issubclass(field_type, (int, float)):
+                    if value is None:
+                        value = 0
+                elif issubclass(field_type, enum.Enum):
                     value = field_type(value)  # 转换为枚举
-                elif issubclass(field_type, datetime):
+                elif issubclass(field_type, dt.datetime):
                     if value == '0000-00-00':
-                        value = date(1970, 1, 1)
-                    if isinstance(value, datetime):
+                        value = dt.date(1970, 1, 1)
+                    if isinstance(value, dt.datetime):
                         value = value.astimezone(DB_TZ)
 
                 init_args[field_name] = value
 
         return cls(**init_args)
 
+    @classmethod
+    def from_dicts(cls: Type[T], data: List[dict], update: dict = None) -> List[T]:
+        results: List[T] = []
+        for item in data:
+            obj: T = cls.from_dict(item, update)
+            results.append(obj)
+        return results
+
+    @classmethod
+    def columns(cls: Type[T], exclude: List[str] = None) -> List[str]:
+        if exclude is None:
+            exclude = []
+        exclude.extend(['vt_symbol', 'gateway_name', 'extra'])
+
+        annotations = {}
+        for base in reversed(cls.__mro__):
+            annotations.update(getattr(base, '__annotations__', {}))
+
+        valid_columns = []
+        for field_name, field_type in annotations.items():
+            if field_name in exclude:
+                continue
+
+            key = field_name[:-6] if field_name.endswith('_price') else field_name
+            valid_columns.append(key)
+        return valid_columns
 
 @dataclass
 class TickData(BaseData):
@@ -89,7 +119,7 @@ class TickData(BaseData):
 
     symbol: str
     exchange: Exchange
-    datetime: datetime
+    datetime: dt.datetime
 
     name: str = ""
     volume: float = 0
@@ -129,7 +159,7 @@ class TickData(BaseData):
     ask_volume_4: float = 0
     ask_volume_5: float = 0
 
-    localtime: datetime = None
+    localtime: dt.datetime = None
 
     def __post_init__(self) -> None:
         """"""
@@ -141,10 +171,10 @@ class BarData(BaseData):
     """
     Candlestick bar data of a certain trading period.
     """
-    symbol: str
-    exchange: Exchange
-    interval: Interval
-    datetime: datetime
+    symbol: str = ""
+    exchange: Exchange = Exchange.SSE
+    interval: Interval = Interval.DAILY
+    datetime: dt.datetime = None
 
     symbol_id: int = 0
     volume: float = 0
@@ -179,7 +209,7 @@ class OrderData(BaseData):
     volume: float = 0
     traded: float = 0
     status: Status = Status.SUBMITTING
-    datetime: datetime = None
+    datetime: dt.datetime = None
     reference: str = ""
     # 如果该订单由stoporder触发，则记录stop_orderid
     trigger_stop_orderid: str = ""
@@ -221,7 +251,7 @@ class TradeData(BaseData):
     offset: Offset = Offset.NONE
     price: float = 0
     volume: float = 0
-    datetime: datetime = None
+    datetime: dt.datetime = None
 
     def __post_init__(self) -> None:
         """"""
@@ -281,7 +311,7 @@ class LogData(BaseData):
 
     def __post_init__(self) -> None:
         """"""
-        self.time: datetime = datetime.now()
+        self.time: dt.datetime = dt.datetime.now()
 
 
 @dataclass
@@ -305,8 +335,8 @@ class ContractData(BaseData):
     option_strike: float = 0
     option_underlying: str = ""     # vt_symbol of underlying contract
     option_type: OptionType = None
-    option_listed: datetime = None
-    option_expiry: datetime = None
+    option_listed: dt.datetime = None
+    option_expiry: dt.datetime = None
     option_portfolio: str = ""
     option_index: str = ""          # for identifying options with same strike price
 
@@ -333,7 +363,7 @@ class QuoteData(BaseData):
     bid_offset: Offset = Offset.NONE
     ask_offset: Offset = Offset.NONE
     status: Status = Status.SUBMITTING
-    datetime: datetime = None
+    datetime: dt.datetime = None
     reference: str = ""
 
     def __post_init__(self) -> None:
@@ -432,8 +462,8 @@ class HistoryRequest:
 
     symbol: str
     exchange: Exchange
-    start: datetime
-    end: datetime = None
+    start: dt.datetime
+    end: dt.datetime = None
     interval: Interval = None
 
     def __post_init__(self) -> None:

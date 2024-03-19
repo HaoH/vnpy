@@ -10,7 +10,7 @@ from .object import BarData, TickData, BaseData
 from .setting import SETTINGS
 from .utility import ZoneInfo
 
-from ex_vnpy.object import BasicStockData, BasicIndexData, BasicSymbolData
+from ex_vnpy.object import BasicStockData, BasicIndexData, BasicSymbolData, ExBarData
 
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
@@ -86,6 +86,19 @@ class BaseDatabase(ABC):
         Load bar data from database.
         """
         pass
+
+    @abstractmethod
+    def load_ex_bar_data(
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval,
+            start: datetime,
+            end: datetime,
+            stype: str = None
+    ) -> List[ExBarData]:
+        pass
+
 
     @abstractmethod
     def load_tick_data(
