@@ -174,7 +174,7 @@ class BaseDatabase(ABC):
         pass
 
     @abstractmethod
-    def update_daily_stat_data(self, many_data: List, conflict: Conflict = Conflict.IGNORE):
+    def update_daily_stat_data(self, many_data: List, conflict: Conflict = Conflict.IGNORE, new_inds: List[str] = None):
         pass
 
     @abstractmethod

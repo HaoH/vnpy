@@ -175,3 +175,4 @@ class Market(Enum):
 class Conflict(Enum):
     REPLACE = "replace"
     IGNORE = "ignore"
+    UPDATE = "update"
