@@ -3,6 +3,7 @@ from types import ModuleType
 from typing import Optional, List, Callable, Dict
 from importlib import import_module
 
+from ex_vnpy.object import SharesData
 from .constant import Market
 from .object import HistoryRequest, TickData, BarData
 from .setting import SETTINGS
@@ -60,6 +61,9 @@ class BaseDatafeed(ABC):
         """
         Query shares
         """
+        output("查询股本信息失败：没有正确配置数据服务")
+
+    def query_shares_history(self, vt_symbols, start, end, output: Callable = print):
         output("查询股本信息失败：没有正确配置数据服务")
 
 

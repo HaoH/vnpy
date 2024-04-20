@@ -10,7 +10,7 @@ from .object import BarData, TickData, BaseData
 from .setting import SETTINGS
 from .utility import ZoneInfo
 
-from ex_vnpy.object import BasicStockData, BasicIndexData, BasicSymbolData, ExBarData
+from ex_vnpy.object import BasicStockData, BasicIndexData, BasicSymbolData, ExBarData, SharesData
 
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
@@ -216,6 +216,11 @@ class BaseDatabase(ABC):
     def get_latest_overview_date(self, market: Market):
         pass
 
+    def save_shares_data(self, bars: List[SharesData], change_starts: List = None, stream: bool = False, conflict: Conflict = Conflict.REPLACE) -> bool:
+        """
+        Save shares data into database.
+        """
+        pass
 
 database: BaseDatabase = None
 
