@@ -10,7 +10,7 @@ from .object import BarData, TickData, BaseData
 from .setting import SETTINGS
 from .utility import ZoneInfo
 
-from ex_vnpy.object import BasicStockData, BasicIndexData, BasicSymbolData, ExBarData, SharesData
+from ex_vnpy.object import BasicStockData, BasicIndexData, BasicSymbolData, ExBarData, SharesData, DailyStatData
 
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
@@ -99,6 +99,17 @@ class BaseDatabase(ABC):
     ) -> List[ExBarData]:
         pass
 
+    @abstractmethod
+    def load_daily_stat_data(
+            self,
+            interval: Interval,
+            start: datetime,
+            end: datetime,
+            symbol: str = None,
+            exchange: Exchange = None,
+            stype: str = "CS"
+    ) -> List[DailyStatData]:
+        pass
 
     @abstractmethod
     def load_tick_data(
@@ -193,6 +204,9 @@ class BaseDatabase(ABC):
         pass
 
     def get_capital_days(self, month_first_day, month_last_day) -> List[str]:
+        pass
+
+    def get_auction_days(self, month_first_day, month_last_day) -> List[str]:
         pass
 
     def get_latest_statistic_date(self):
